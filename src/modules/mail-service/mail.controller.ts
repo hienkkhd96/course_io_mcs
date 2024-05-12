@@ -1,6 +1,12 @@
 import { Controller } from "@nestjs/common";
 import { MailService } from "./mail.service";
-import { MessagePattern } from "@nestjs/microservices";
+import {
+  Ctx,
+  EventPattern,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from "@nestjs/microservices";
 @Controller("mail")
 export class MailController {
   constructor(private mailService: MailService) {}
@@ -12,12 +18,17 @@ export class MailController {
     };
     token: string;
   }) {
-    console.log('====================================');
-    console.log(data);
-    console.log('====================================');
     if (!data?.user) {
       return;
     }
     return this.mailService.sendUserConfirmation(data.user, data.token);
+  }
+  @EventPattern("notifications")
+  sendNotification(
+    @Payload() data: Record<string, any>,
+    @Ctx() context: RmqContext,
+  ) {
+    const channel = context.getChannelRef();
+    channel.ack(context.getMessage());
   }
 }
