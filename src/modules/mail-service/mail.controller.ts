@@ -29,6 +29,7 @@ export class MailController {
     @Ctx() context: RmqContext,
   ) {
     const channel = context.getChannelRef();
+    console.log(data);
     channel.ack(context.getMessage());
   }
 }
